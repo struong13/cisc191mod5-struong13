@@ -5,7 +5,6 @@ import java.util.Deque;
 
 /**
  * Module 5 Lab: Recursion + Algorithms
- *
  * Reflection Questions:
  * 1. What is the base case for your recursive binary search?
  * 2. Why is recursion natural for the bracket tree?
@@ -23,7 +22,9 @@ public class GameAlgorithms {
      */
     public static int findMatchRecursive(int[] sortedMatchIds, int target) {
         // TODO: Replace this stub by calling a recursive helper method.
-        return -999;
+
+        // Start recursion with full range of array
+        return findMatchRecursiveHelper(sortedMatchIds, target, 0, sortedMatchIds.length - 1);
     }
 
     /**
@@ -37,9 +38,28 @@ public class GameAlgorithms {
      */
     private static int findMatchRecursiveHelper(int[] sortedMatchIds, int target, int low, int high) {
         // TODO: Implement recursive binary search.
-        return -999;
-    }
 
+        // Base case: range is invalid -> not found
+        if (low > high) {
+            return -1;
+        }
+
+        int mid = (low + high) / 2; //find middle index
+
+        // Found case
+        if (sortedMatchIds[mid] == target) {
+            return mid;
+        }
+
+        // Recursive case: search left half
+        else if (target < sortedMatchIds[mid]) {
+            return findMatchRecursiveHelper(sortedMatchIds, target, low, mid - 1);
+        }
+        // Recursive case: search right half
+        else {
+            return findMatchRecursiveHelper(sortedMatchIds, target, mid + 1, high);
+        }
+    }
     /**
      * Searches a sorted array of match IDs iteratively.
      *
@@ -49,14 +69,27 @@ public class GameAlgorithms {
      */
     public static int findMatchIterative(int[] sortedMatchIds, int target) {
         // TODO: Implement iterative binary search with a loop.
-        return -999;
+        int low = 0;
+        int high = sortedMatchIds.length - 1;
+
+        while (low <= high) {
+            int mid = (low + high) / 2; // find middle
+
+            if (sortedMatchIds[mid] == target) {
+                return mid; // found
+            } else if (target < sortedMatchIds[mid]) {
+                high = mid - 1; // search left
+            } else {
+                low = mid + 1; // search right
+            }
+        }
+        return -1; // not found
     }
 
     /**
      * Counts connected walkable tiles recursively.
      * Walkable tiles are represented by '.'.
      * Blocked tiles can be any other character.
-     *
      * This method should count the size of the connected region starting at (startRow, startCol).
      * Count only vertical and horizontal neighbors, not diagonals.
      *
@@ -67,9 +100,27 @@ public class GameAlgorithms {
      */
     public static int countConnectedTilesRecursive(char[][] map, int startRow, int startCol) {
         // TODO: Implement recursive flood-fill / connected tile counting.
-        return -999;
-    }
 
+        // Base case: out of bounds
+        if (isOutOfBounds(map, startRow, startCol)) {
+            return 0;
+        }
+
+        // Base case: not a walkable tile
+        if (map[startRow][startCol] != '.') {
+            return 0;
+        }
+
+        // mark visited so we don't count it again
+        map[startRow][startCol] = '#';
+
+        // count this tile + all 4 directions
+        return 1
+                + countConnectedTilesRecursive(map, startRow - 1, startCol) // up
+                + countConnectedTilesRecursive(map, startRow + 1, startCol) // down
+                + countConnectedTilesRecursive(map, startRow, startCol - 1) // left
+                + countConnectedTilesRecursive(map, startRow, startCol + 1); // right
+    }
     /**
      * Counts connected walkable tiles iteratively using an explicit stack.
      *
@@ -80,7 +131,42 @@ public class GameAlgorithms {
      */
     public static int countConnectedTilesIterative(char[][] map, int startRow, int startCol) {
         // TODO: Implement iterative flood-fill / connected tile counting.
-        return -999;
+
+        // if starting tile is invalid or blocked
+        if (isOutOfBounds(map, startRow, startCol) || map[startRow][startCol] != '.') {
+            return 0;
+        }
+
+        int count = 0;
+        Deque<CellPosition> stack = new ArrayDeque<>();
+
+        // push starting position
+        stack.push(new CellPosition(startRow, startCol));
+
+        while (!stack.isEmpty()) {
+            CellPosition current = stack.pop();
+            int row = current.row();
+            int col = current.col();
+
+            // skip invalid positions
+            if (isOutOfBounds(map, row, col)) {
+                continue;
+            }
+            if (map[row][col] != '.') {
+                continue;
+            }
+            // mark visited
+            map[row][col] = '#';
+            count++;
+
+            // push neighbors
+            pushNeighbor(stack, row - 1, col); // up
+            pushNeighbor(stack, row + 1, col); // down
+            pushNeighbor(stack, row, col - 1); // left
+            pushNeighbor(stack, row, col + 1); // right
+        }
+
+        return count;
     }
 
     /**
@@ -93,7 +179,7 @@ public class GameAlgorithms {
      */
     public static boolean containsMatch(BracketNode root, String target) {
         // TODO: Replace this stub by calling a helper method.
-        return false;
+        return containsMatchHelper(root, target);
     }
 
     /**
@@ -105,9 +191,22 @@ public class GameAlgorithms {
      */
     private static boolean containsMatchHelper(BracketNode node, String target) {
         // TODO: Implement recursive tree search.
-        return false;
-    }
 
+        // Base case: reached end of branch
+        if (node == null) {
+            return false;
+        }
+
+        // Found case
+        if (node.getMatchName().equals(target)) {
+            return true;
+        }
+
+        // Recursive case: search left or right subtree
+        return containsMatchHelper(node.getLeft(), target)
+                || containsMatchHelper(node.getRight(), target);
+
+    }
     /**
      * Optional utility students may use if they want to avoid repeating bounds checks.
      */
